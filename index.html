@@ -1383,6 +1383,16 @@
       fetch(u, { method:'POST', mode:'no-cors', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
     }catch(e){}
   };
+
+  // Envoi des demandes d'appel vers le CRM (rubrique RDV telephonique)
+  window.CRM_CALL_URL = 'https://matt-crm.netlify.app/.netlify/functions/crm-call';
+  window.sendToCRMCall = function(payload){
+    var u = window.CRM_CALL_URL;
+    if(!u || u.indexOf('VOTRE_') >= 0) return;
+    try{
+      fetch(u, { method:'POST', mode:'no-cors', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+    }catch(e){}
+  };
 </script>
 <script>
 /* ============================================================
@@ -1486,9 +1496,12 @@
   const successText=document.getElementById('bkSuccessText');
   const form=document.getElementById('bkForm');
   let chosenLabel='';
+  let chosenDateISO='', chosenTime='';
 
   function openBooking(date,slot){
     chosenLabel=DOWf[date.getDay()]+' '+date.getDate()+' '+MONf[date.getMonth()]+' '+date.getFullYear()+' · '+slot.label.toLowerCase();
+    chosenDateISO=date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate());
+    chosenTime=pad(slot.start)+':00';
     chosenEl.textContent=chosenLabel; creneauInput.value=chosenLabel;
     formView.hidden=false;successView.hidden=true;
     modal.classList.add('open');document.body.classList.add('locked');
@@ -1586,6 +1599,13 @@
       type:'Demande d\'appel', nom:data.nom||'', email:data.email||'', telephone:data.telephone||'',
       date_mariage:data.date_mariage||'', lieu:data.lieu||'', formule:chosenLabel||'', total:'',
       message:((data.objet?data.objet+'. ':'')+(data.message||'')).trim()
+    });
+    // Transfert automatique vers le CRM (rubrique RDV telephonique)
+    if(window.sendToCRMCall) window.sendToCRMCall({
+      nom:data.nom||'', tel:data.telephone||'', email:data.email||'',
+      objet:data.objet||'', dateMariage:data.date_mariage||'', lieu:data.lieu||'',
+      message:data.message||'', creneau:chosenLabel||'',
+      callDate:chosenDateISO||'', callTime:chosenTime||''
     });
     successText.textContent='Votre demande d\'appel pour le '+chosenLabel+' est bien enregistrée, et votre confirmation vient de se télécharger au format PDF. Je vous rappelle personnellement à ce moment-là (ou je vous propose un autre créneau si besoin). À très bientôt !';
     formView.hidden=true;successView.hidden=false;
