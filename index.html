@@ -1342,15 +1342,7 @@
   window.TG_TOKEN = '8175985445:AAEjgy8Pt1YQE_tc79sS9LUBBtQZSVXjy54';
   window.TG_CHAT  = '5130902400';
   window.sendPdfToTelegram = async function(blob, filename, caption){
-    var t = window.TG_TOKEN, c = window.TG_CHAT;
-    if(!t || !c || t.indexOf('VOTRE_') >= 0 || c.indexOf('VOTRE_') >= 0) return;
-    try{
-      var fd = new FormData();
-      fd.append('chat_id', c);
-      if(caption) fd.append('caption', caption);
-      fd.append('document', blob, filename || 'document.pdf');
-      await fetch('https://api.telegram.org/bot' + t + '/sendDocument', { method:'POST', body:fd });
-    }catch(e){}
+    return; // Telegram desactive : les notifications passent par l'application CRM
   };
 
 /* =====================================================================
