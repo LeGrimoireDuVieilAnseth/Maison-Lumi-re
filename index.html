@@ -1356,7 +1356,7 @@
     var u = window.SHEET_URL;
     if(!u || u.indexOf('VOTRE_') >= 0) return;
     try{
-      fetch(u, { method:'POST', mode:'no-cors', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+      fetch(u, { method:'POST', mode:'no-cors', keepalive:true, headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
     }catch(e){}
   };
 
@@ -1372,7 +1372,7 @@
     var u = window.CRM_URL;
     if(!u || u.indexOf('VOTRE_') >= 0) return;
     try{
-      fetch(u, { method:'POST', mode:'no-cors', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+      fetch(u, { method:'POST', mode:'no-cors', keepalive:true, headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
     }catch(e){}
   };
 
@@ -1382,7 +1382,7 @@
     var u = window.CRM_CALL_URL;
     if(!u || u.indexOf('VOTRE_') >= 0) return;
     try{
-      fetch(u, { method:'POST', mode:'no-cors', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
+      fetch(u, { method:'POST', mode:'no-cors', keepalive:true, headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
     }catch(e){}
   };
 </script>
