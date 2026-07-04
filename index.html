@@ -666,6 +666,10 @@
             <button type="button" class="li-toggle-head">Toutes les photos triées &amp; retouchées <span class="ar">▾</span></button>
             <div class="li-toggle-desc" hidden>Retouches : luminosité, recadrage, colorimétrie, suppression d'objets gênants</div>
           </li>
+          <li class="li-toggle">
+            <button type="button" class="li-toggle-head">Best of <span class="ar">▾</span></button>
+            <div class="li-toggle-desc" hidden>Les grimaces et toutes les photos dites « ratées » mais qui restent de beaux souvenirs.</div>
+          </li>
           <li>Galerie privée en ligne</li>
           <li class="opt"><select class="deliv" aria-label="Délai de livraison">
             <option value="0">Livraison sous 1 mois</option>
@@ -1296,14 +1300,6 @@
       if(dur)   total+=parseInt(dur.options[dur.selectedIndex].dataset.add||0,10);
       if(deliv) total+=parseInt(deliv.value,10);
       card.querySelectorAll('.opt-add:checked').forEach(c=>total+=parseInt(c.value,10));
-      // Engagement offert si Before the day + Témoignage sont tous deux sélectionnés
-      const offered = btd && temo && btd.checked && temo.checked;
-      if(offered){
-        if(eng && eng.checked) total-=parseInt(eng.value,10);
-        if(engPrice) engPrice.textContent='Offert';
-      }else if(engPrice){
-        engPrice.textContent=engOrig;
-      }
       amt.textContent=total.toLocaleString('fr-FR');
     };
     card.querySelectorAll('select,.opt-add').forEach(el=>el.addEventListener('change',update));
@@ -1670,7 +1666,7 @@
     const addons=[];
     const adds=[].slice.call(card.querySelectorAll('.opt-add'));
     const eng=adds.find(c=>c.value==='390'),btd=adds.find(c=>c.value==='790'),temo=adds.find(c=>c.value==='490');
-    const offered=btd&&temo&&btd.checked&&temo.checked;
+    const offered=false;
     card.querySelectorAll('.opt-add:checked').forEach(function(c){
       const box=c.closest('.addon');
       const nm=box.querySelector('.addon-name').textContent.trim();
