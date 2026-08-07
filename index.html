@@ -487,6 +487,49 @@
     form{grid-template-columns:1fr}
     section{padding:80px 0}
   }
+
+  /* ---------- Assistant de chat ---------- */
+  .ml-chat-fab{position:fixed;right:20px;bottom:20px;z-index:900;width:58px;height:58px;border-radius:50%;
+    border:0;cursor:pointer;background:var(--espresso);color:var(--ivory);display:flex;align-items:center;
+    justify-content:center;box-shadow:0 14px 34px -10px rgba(36,28,23,.55);transition:.25s}
+  .ml-chat-fab svg{width:26px;height:26px}
+  .ml-chat-fab:hover{transform:scale(1.06)}
+  .ml-chat-fab-dot{position:absolute;top:3px;right:3px;width:12px;height:12px;border-radius:50%;
+    background:var(--gold);border:2px solid var(--ivory)}
+  .ml-chat{position:fixed;right:20px;bottom:90px;z-index:905;width:min(370px,calc(100vw - 28px));
+    height:min(540px,calc(100dvh - 130px));background:var(--ivory);border-radius:6px;overflow:hidden;
+    display:none;flex-direction:column;box-shadow:0 34px 80px -24px rgba(36,28,23,.6);border:1px solid var(--line)}
+  .ml-chat.open{display:flex}
+  .ml-chat-head{background:var(--espresso);color:var(--ivory);padding:14px 16px;display:flex;align-items:center;gap:10px}
+  .ml-chat-head b{display:block;font-family:var(--serif);font-size:17px;font-weight:500}
+  .ml-chat-head span{font-size:11px;opacity:.75;letter-spacing:.08em;text-transform:uppercase}
+  .ml-chat-new,.ml-chat-close{border:0;background:none;color:var(--ivory);cursor:pointer;padding:0 3px;opacity:.75;display:flex}
+  .ml-chat-new{margin-left:auto}
+  .ml-chat-new:hover,.ml-chat-close:hover{opacity:1}
+  .ml-chat-new svg{width:17px;height:17px}
+  .ml-chat-close{font-size:25px;line-height:1;align-items:center}
+  .ml-chat-msgs{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:10px;background:#FCFAF7}
+  .ml-b{max-width:85%;padding:9px 14px 10px;border-radius:4px;font-size:14.5px;line-height:1.55;
+    white-space:pre-wrap;word-wrap:break-word;font-family:var(--sans)}
+  .ml-who{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;opacity:.85}
+  .ml-b.ia{background:#fff;border:1px solid var(--line);align-self:flex-start;color:var(--espresso)}
+  .ml-b.ia .ml-who{color:var(--mocha)}
+  .ml-b.moi{background:var(--cream);color:var(--espresso);align-self:flex-end}
+  .ml-b.moi .ml-who{color:var(--gold)}
+  .ml-b.matt{background:#fff;border:2px solid var(--gold);align-self:flex-start;color:var(--espresso);
+    box-shadow:0 2px 10px -4px rgba(176,141,87,.5)}
+  .ml-b.matt .ml-who{color:var(--gold)}
+  .ml-b.wait{color:var(--mocha);font-style:italic}
+  .ml-b.wait .ml-who{font-style:normal}
+  .ml-chat-bar{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);background:var(--ivory)}
+  .ml-chat-bar input{flex:1;border:1px solid var(--line);border-radius:3px;padding:11px 14px;
+    font-family:var(--sans);font-size:14.5px;outline:none;background:#fff;color:var(--espresso)}
+  .ml-chat-bar input:focus{border-color:var(--gold)}
+  .ml-chat-bar button{width:44px;height:44px;border-radius:3px;border:0;background:var(--espresso);
+    color:var(--ivory);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+  .ml-chat-bar button svg{width:18px;height:18px}
+  .ml-chat-bar button:disabled{opacity:.5;cursor:default}
+  @media(max-width:640px){.ml-chat{bottom:86px;height:min(480px,calc(100dvh - 130px))}}
 </style>
 </head>
 <body>
@@ -1936,6 +1979,121 @@
     const cta=card.querySelector('.btn');
     if(cta&&cta.parentNode)cta.parentNode.insertBefore(b,cta.nextSibling);else card.appendChild(b);
   });
+})();
+</script>
+
+<!-- ============ ASSISTANT DE CHAT (IA + relais vers Matt) ============ -->
+<button type="button" class="ml-chat-fab" id="mlFab" aria-label="Ouvrir le chat">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z"/><path d="M9 11h.01M12.5 11h.01M16 11h.01"/></svg>
+  <span class="ml-chat-fab-dot"></span>
+</button>
+<div class="ml-chat" id="mlChat" aria-hidden="true">
+  <div class="ml-chat-head">
+    <div><b>Maison Lumière</b><span>Réponse immédiate</span></div>
+    <button type="button" class="ml-chat-new" id="mlNew" title="Nouvelle conversation" aria-label="Nouvelle conversation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg>
+    </button>
+    <button type="button" class="ml-chat-close" id="mlClose" aria-label="Fermer">&times;</button>
+  </div>
+  <div class="ml-chat-msgs" id="mlMsgs"></div>
+  <div class="ml-chat-bar">
+    <input id="mlInput" type="text" maxlength="600" placeholder="Posez votre question..." autocomplete="off">
+    <button type="button" id="mlSend" aria-label="Envoyer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+    </button>
+  </div>
+</div>
+<script>
+/* Assistant Maison Lumiere : meme moteur que Mybabyshoot, savoir different.
+   L'historique reste sur l'appareil du visiteur (localStorage, 30 jours). */
+(function(){
+  var API='https://matt-crm.netlify.app/.netlify/functions';
+  var BRAND='maison-lumiere';
+  var fab=document.getElementById('mlFab'), panel=document.getElementById('mlChat');
+  var msgsEl=document.getElementById('mlMsgs'), input=document.getElementById('mlInput'), sendBtn=document.getElementById('mlSend');
+  if(!fab||!panel) return;
+
+  var HELLO="Bonjour et bienvenue chez Maison Lumière. Je peux vous renseigner sur nos formules, les tarifs, le déroulé du jour J ou vous mettre en relation avec Matteo.";
+  var QUI={user:'Vous',assistant:'Assistant Maison Lumière',matt:'Matteo de Maison Lumière'};
+  var MAX_AGE=30*24*3600*1000;
+  var hist=[], convId=null, busy=false, poll=null;
+  try{
+    var saved=JSON.parse(localStorage.getItem('mlChat')||'null');
+    if(saved&&saved.t&&(Date.now()-saved.t)<MAX_AGE){ hist=saved.hist||[]; convId=saved.convId||null; }
+    else localStorage.removeItem('mlChat');
+  }catch(e){ hist=[]; convId=null; }
+
+  function save(){ try{ localStorage.setItem('mlChat',JSON.stringify({t:Date.now(),convId:convId,hist:hist.slice(-30)})); }catch(e){} }
+  function bubble(role,text,wait){
+    var cls=role==='user'?'moi':(role==='matt'?'matt':'ia');
+    var d=document.createElement('div'); d.className='ml-b '+cls+(wait?' wait':'');
+    var w=document.createElement('div'); w.className='ml-who'; w.textContent=QUI[role]||QUI.assistant;
+    var p=document.createElement('div'); p.textContent=text;
+    d.appendChild(w); d.appendChild(p); msgsEl.appendChild(d);
+    msgsEl.scrollTop=msgsEl.scrollHeight; return d;
+  }
+  function paint(){ msgsEl.innerHTML=''; bubble('assistant',HELLO); hist.forEach(function(m){ bubble(m.role,m.content); }); }
+  function stopPoll(){ if(poll){ clearInterval(poll); poll=null; } }
+  function startPoll(){
+    stopPoll(); if(!convId) return;
+    poll=setInterval(function(){
+      if(busy||!convId) return;
+      fetch(API+'/mbs-chat?conv='+encodeURIComponent(convId)+'&after='+hist.length,{cache:'no-store'})
+        .then(function(r){ return r.ok?r.json():null; })
+        .then(function(j){
+          if(j&&j.ok&&j.messages&&j.messages.length){
+            j.messages.forEach(function(m){
+              var role=(m.role==='user'||m.role==='matt')?m.role:'assistant';
+              hist.push({role:role,content:m.content});
+              if(panel.classList.contains('open')) bubble(role,m.content);
+            });
+            save();
+          }
+        }).catch(function(){});
+    },7000);
+  }
+  function openChat(){ panel.classList.add('open'); panel.setAttribute('aria-hidden','false'); paint(); startPoll(); setTimeout(function(){ input.focus(); },120); }
+  function closeChat(){ panel.classList.remove('open'); panel.setAttribute('aria-hidden','true'); stopPoll(); }
+
+  fab.addEventListener('click',function(){ panel.classList.contains('open')?closeChat():openChat(); });
+  document.getElementById('mlClose').addEventListener('click',closeChat);
+  document.getElementById('mlNew').addEventListener('click',function(){
+    if(!hist.length||confirm('Effacer cette conversation et repartir de zéro ?')){
+      hist=[]; convId=null; stopPoll();
+      try{ localStorage.removeItem('mlChat'); }catch(e){}
+      paint();
+    }
+  });
+
+  function send(){
+    var text=(input.value||'').trim();
+    if(!text||busy) return;
+    input.value='';
+    hist.push({role:'user',content:text}); save(); bubble('user',text);
+    busy=true; sendBtn.disabled=true;
+    var waitB=bubble('assistant',"L'assistant écrit...",true);
+    fetch(API+'/mbs-chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({brand:BRAND,convId:convId,message:text,
+        history:hist.slice(0,-1).slice(-12).map(function(m){ return {role:m.role==='user'?'user':'assistant',content:m.content}; })})})
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        waitB.remove();
+        if(j&&j.convId){ convId=j.convId; save(); startPoll(); }
+        if(j&&j.manual){
+          bubble('assistant',"Message transmis à Matteo. Restez sur cette fenêtre, il vous répond ici même.",true);
+        }else{
+          var reply=(j&&j.reply)?j.reply:"Je n'arrive pas à répondre pour le moment. Appelez Matteo au 06 47 76 54 17 !";
+          hist.push({role:'assistant',content:reply}); save(); bubble('assistant',reply);
+        }
+      })
+      .catch(function(){
+        waitB.remove();
+        bubble('assistant',"Petit souci de connexion. Réessayez, ou appelez Matteo au 06 47 76 54 17.");
+      })
+      .then(function(){ busy=false; sendBtn.disabled=false; input.focus(); });
+  }
+  sendBtn.addEventListener('click',send);
+  input.addEventListener('keydown',function(e){ if(e.key==='Enter') send(); });
 })();
 </script>
 </body>
